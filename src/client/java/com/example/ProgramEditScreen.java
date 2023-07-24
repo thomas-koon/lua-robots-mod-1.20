@@ -13,6 +13,9 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
+import org.luaj.vm2.Globals;
+import org.luaj.vm2.LuaValue;
+import org.luaj.vm2.lib.jse.JsePlatform;
 import org.lwjgl.glfw.GLFW;
 
 public class ProgramEditScreen extends Screen {
@@ -60,6 +63,15 @@ public class ProgramEditScreen extends Screen {
                     programText.append(linesList.getString(i)).append("\n");
                 }
                 programTextBox.setText(programText.toString());
+                // test to run lua code
+                Globals globals = JsePlatform.standardGlobals();
+                try {
+                    // Load and execute the Lua script
+                    LuaValue chunk = globals.load(programText.toString());
+                    System.out.println(chunk.call());
+                } catch (Exception e) {
+                    System.out.println("uhhhh no???");
+                }
             }
         }
     }
@@ -72,6 +84,5 @@ public class ProgramEditScreen extends Screen {
             linesList.add(NbtString.of(line));
         }
         nbtCompound.put("program_lines", linesList);
-        System.out.println("meow" + itemStack.getNbt().get("program_lines"));
     }
 }

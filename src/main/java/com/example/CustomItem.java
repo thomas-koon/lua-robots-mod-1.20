@@ -28,19 +28,10 @@ public class CustomItem extends Item {
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
         Globals globals = JsePlatform.standardGlobals();
-        try {
-            // Load and execute the Lua script
-            LuaValue chunk = globals.load("print 'hello, world'");
-            System.out.println(chunk.call());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         if(playerEntity instanceof ServerPlayerEntity serverPlayer) {
             ServerPlayNetworking.send(serverPlayer,
                     NetworkingConstants.OPEN_PROGRAM_EDIT_SCREEN_PACKET_ID, PacketByteBufs.empty());
-
         }
-
         return TypedActionResult.success(playerEntity.getStackInHand(hand));
     }
 }

@@ -1,5 +1,8 @@
 package com.example;
 
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.EditBoxWidget;
@@ -11,6 +14,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import org.luaj.vm2.Globals;
@@ -53,6 +57,7 @@ public class ProgramEditScreen extends Screen {
     }
 
     private void loadDataFromProgram() {
+        System.out.println("load");
         NbtCompound nbt = itemStack.getNbt();
         if(nbt != null) {
             if(nbt.contains("program_lines")) {
@@ -63,26 +68,19 @@ public class ProgramEditScreen extends Screen {
                     programText.append(linesList.getString(i)).append("\n");
                 }
                 programTextBox.setText(programText.toString());
-                // test to run lua code
-                Globals globals = JsePlatform.standardGlobals();
-                try {
-                    // Load and execute the Lua script
-                    LuaValue chunk = globals.load(programText.toString());
-                    System.out.println(chunk.call());
-                } catch (Exception e) {
-                    System.out.println("uhhhh no???");
-                }
             }
         }
     }
 
     private void saveDataToProgram() {
-        NbtCompound nbtCompound = itemStack.getOrCreateNbt();
+        System.out.println("save");
         String[] lines = programTextBox.getText().split("\\r?\\n");
-        NbtList linesList = new NbtList();
+        StringBuilder programText = new StringBuilder();
         for(String line : lines) {
-            linesList.add(NbtString.of(line));
+            programText.append(line);
         }
-        nbtCompound.put("program_lines", linesList);
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeString(programText.toString());
+        ClientPlayNetworking.send(NetworkingConstants.CHANGE_PROGRAM_TEXT_PACKET_ID, buf);
     }
 }

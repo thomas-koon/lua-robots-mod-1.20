@@ -16,7 +16,7 @@ public class RobotPDAItem extends Item {
     @Override
     public ActionResult useOnEntity(ItemStack stack, PlayerEntity playerEntity, LivingEntity entity, Hand hand) {
         if (entity instanceof RobotEntity robotEntity && entity.isAlive()) {
-
+            robotEntity.runCurrentProgram();
         }
         return ActionResult.PASS;
     }

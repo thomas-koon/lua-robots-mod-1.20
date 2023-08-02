@@ -25,6 +25,7 @@ public class ExampleMod implements ModInitializer {
 	// That way, it's clear which mod wrote info, warnings, and errors.
     public static final Logger LOGGER = LoggerFactory.getLogger("modid");
 	public static final ProgramItem CUSTOM_ITEM = new ProgramItem(new FabricItemSettings());
+	public static final RobotPDAItem PDA_ITEM = new RobotPDAItem(new FabricItemSettings());
 
 	public static final EntityType<RobotEntity> ROBOT = Registry.register(
 			Registries.ENTITY_TYPE, new Identifier("tutorial", "robot"),
@@ -36,6 +37,7 @@ public class ExampleMod implements ModInitializer {
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
+		Registry.register(Registries.ITEM, new Identifier("tutorial", "pda"), PDA_ITEM);
 		Registry.register(Registries.ITEM, new Identifier("tutorial", "custom_item"), CUSTOM_ITEM);
 		FabricDefaultAttributeRegistry.register(ROBOT, RobotEntity.createMobAttributes());
 		LOGGER.info("Hello Fabric world!");
@@ -53,6 +55,5 @@ public class ExampleMod implements ModInitializer {
 				nbtCompound.put("program_lines", linesList);
 			});
 		});
-
 	}
 }

@@ -44,7 +44,6 @@ public class RobotEntity extends MobEntity implements VehicleInventory {
     public void tick() {
         super.tick();
         setCurrentProgramToTopLeft();
-        runCurrentProgram();
     }
 
     public void setCurrentProgramToTopLeft() {

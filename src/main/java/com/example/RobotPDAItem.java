@@ -15,8 +15,9 @@ public class RobotPDAItem extends Item {
 
     @Override
     public ActionResult useOnEntity(ItemStack stack, PlayerEntity playerEntity, LivingEntity entity, Hand hand) {
-        if (entity instanceof RobotEntity robotEntity && entity.isAlive()) {
+        if (entity instanceof RobotEntity robotEntity && entity.isAlive() && !playerEntity.getWorld().isClient) {
             robotEntity.runCurrentProgram();
+            System.out.println("i only run once because my code checked for getWorld().isClient !");
         }
         return ActionResult.PASS;
     }

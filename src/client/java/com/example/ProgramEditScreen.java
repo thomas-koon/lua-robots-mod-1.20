@@ -67,6 +67,7 @@ public class ProgramEditScreen extends Screen {
                 for (int i = 0; i < linesList.size(); i++) {
                     programText.append(linesList.getString(i)).append("\n");
                 }
+                System.out.println("programText: " + programText);
                 programTextBox.setText(programText.toString());
             }
         }
@@ -77,7 +78,7 @@ public class ProgramEditScreen extends Screen {
         String[] lines = programTextBox.getText().split("\\r?\\n");
         StringBuilder programText = new StringBuilder();
         for(String line : lines) {
-            programText.append(line);
+            programText.append(line + "\n");
         }
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeString(programText.toString());

@@ -5,6 +5,9 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.model.Dilation;
+import net.minecraft.client.render.entity.EntityRenderer;
+import net.minecraft.client.render.entity.FlyingItemEntityRenderer;
+import net.minecraft.client.render.entity.ProjectileEntityRenderer;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -26,7 +29,13 @@ public class ExampleModClient implements ClientModInitializer {
 		EntityRendererRegistry.register(ExampleMod.ROBOT, (context) -> {
 			return new RobotEntityRenderer(context);
 		});
-
+		EntityRendererRegistry.register(ExampleMod.ROBOT_INVISIBLE_ATTACK_PROJECTILE, (context) ->
+				new EntityRenderer<RobotInvisibleAttackProjectileEntity>(context) {
+					@Override
+					public Identifier getTexture(RobotInvisibleAttackProjectileEntity entity) {
+						return new Identifier("tutorial", "textures/item/pda.png");
+					}
+				});
 		EntityModelLayerRegistry.registerModelLayer(MODEL_ROBOT_LAYER, RobotEntityModel::getTexturedModelData);
 	}
 }

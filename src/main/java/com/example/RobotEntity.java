@@ -1,28 +1,28 @@
 package com.example;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.vehicle.VehicleInventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.Item;
+import net.minecraft.inventory.Inventories;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
-import org.luaj.vm2.Globals;
-import org.luaj.vm2.LuaValue;
-import org.luaj.vm2.lib.jse.JsePlatform;
+
+import java.util.List;
 
 public class RobotEntity extends MobEntity implements VehicleInventory {
 
@@ -34,16 +34,23 @@ public class RobotEntity extends MobEntity implements VehicleInventory {
 
     private LuaScriptManager luaScriptManager;
 
+    private int delayTicks;
     private float targetYaw;
+    private static final double ATTACKING_RANGE = 1.0;
     protected RobotEntity(EntityType<? extends MobEntity> entityType, World world) {
         super(entityType, world);
         this.luaScriptManager = new LuaScriptManager(this);
+    }
+
+    public static DefaultAttributeContainer.Builder createRobotAttributes() {
+        return MobEntity.createMobAttributes().add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 20);
     }
 
     @Override
     public void tick() {
         super.tick();
         setCurrentProgramToTopLeft();
+        tickHandSwing();
     }
 
     public void setCurrentProgramToTopLeft() {
@@ -73,8 +80,59 @@ public class RobotEntity extends MobEntity implements VehicleInventory {
         }
     }
 
+    public void turnRight() {
+        setHeadYaw(getHeadYaw() + 90);
+        setBodyYaw(getBodyYaw() + 90);
+        setYaw(getYaw() + 90);
+    }
+
+    public void turnLeft() {
+        setHeadYaw(getHeadYaw() - 90);
+        setBodyYaw(getBodyYaw() - 90);
+        setYaw(getYaw() - 90);
+    }
+
+    public void turnAround() {
+        setHeadYaw(getHeadYaw() + 180);
+        setBodyYaw(getBodyYaw() + 180);
+        setYaw(getYaw() + 180);
+    }
+
+    public void moveForward(int blocks) {
+        setVelocity(Vec3d.fromPolar(0, getHeadYaw()).normalize().multiply(0.38 * blocks));
+    }
+
+    public void moveBackward(int blocks) {
+        setVelocity(Vec3d.fromPolar(0, getHeadYaw()).normalize().multiply(-0.38 * blocks));
+    }
+
+    public void attack() {
+        swingHand(Hand.MAIN_HAND);
+        if (!getWorld().isClient) {
+            Vec3d vec3d = this.getRotationVec(1.0F);
+            System.out.println("Launch");
+            RobotInvisibleAttackProjectileEntity attackProjectileEntity = new RobotInvisibleAttackProjectileEntity(getWorld(), this);
+            attackProjectileEntity.setVelocity(this, 0, getHeadYaw(), 0.0F, 1.5F, 0F);
+            attackProjectileEntity.setPosition(this.getX(), this.getY(), this.getZ());
+            getWorld().spawnEntity(attackProjectileEntity);
+        }
+    }
+
     public ScreenHandler getScreenHandler(int syncId, PlayerInventory playerInventory) {
         return GenericContainerScreenHandler.createGeneric9x3(syncId, playerInventory, this);
+    }
+
+    @Override
+    public NbtCompound writeNbt(NbtCompound nbt) {
+        super.writeNbt(nbt);
+        Inventories.writeNbt(nbt,inventory);
+        return nbt;
+    }
+
+    @Override
+    public void readNbt(NbtCompound nbt) {
+        super.readNbt(nbt);
+        Inventories.readNbt(nbt,inventory);
     }
 
     @Nullable
@@ -151,7 +209,6 @@ public class RobotEntity extends MobEntity implements VehicleInventory {
 
     @Override
     public void clear() {
-        System.out.println("begone");
         this.clearInventory();
     }
 }

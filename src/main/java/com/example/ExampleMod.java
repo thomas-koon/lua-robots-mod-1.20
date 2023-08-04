@@ -32,6 +32,11 @@ public class ExampleMod implements ModInitializer {
 			FabricEntityTypeBuilder.create(SpawnGroup.MISC, RobotEntity::new).dimensions(EntityDimensions.fixed(1.0f, 1.0f)).build()
 	);
 
+	public static final EntityType<RobotInvisibleAttackProjectileEntity> ROBOT_INVISIBLE_ATTACK_PROJECTILE = Registry.register(
+			Registries.ENTITY_TYPE, new Identifier("tutorial", "robot_attack"),
+			FabricEntityTypeBuilder.<RobotInvisibleAttackProjectileEntity>create(SpawnGroup.MISC, RobotInvisibleAttackProjectileEntity::new).dimensions(EntityDimensions.fixed(0.25f, 0.25f)).build()
+	);
+
 	@Override
 	public void onInitialize() {
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
@@ -39,7 +44,7 @@ public class ExampleMod implements ModInitializer {
 		// Proceed with mild caution.
 		Registry.register(Registries.ITEM, new Identifier("tutorial", "pda"), PDA_ITEM);
 		Registry.register(Registries.ITEM, new Identifier("tutorial", "custom_item"), CUSTOM_ITEM);
-		FabricDefaultAttributeRegistry.register(ROBOT, RobotEntity.createMobAttributes());
+		FabricDefaultAttributeRegistry.register(ROBOT, RobotEntity.createRobotAttributes());
 		LOGGER.info("Hello Fabric world!");
 
 		ServerPlayNetworking.registerGlobalReceiver(NetworkingConstants.CHANGE_PROGRAM_TEXT_PACKET_ID, (server, player, handler, buf, responseSender) -> {

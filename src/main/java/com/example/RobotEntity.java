@@ -1,7 +1,9 @@
 package com.example;
 
+import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.mob.MobEntity;
@@ -16,9 +18,14 @@ import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.UseAction;
 import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.math.BlockPointer;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -80,6 +87,11 @@ public class RobotEntity extends MobEntity implements VehicleInventory {
         }
     }
 
+    @Override
+    public int getMaxLookPitchChange() {
+        return 180;
+    }
+
     public void turnRight() {
         setHeadYaw(getHeadYaw() + 90);
         setBodyYaw(getBodyYaw() + 90);
@@ -115,6 +127,115 @@ public class RobotEntity extends MobEntity implements VehicleInventory {
             attackProjectileEntity.setVelocity(this, 0, getHeadYaw(), 0.0F, 1.5F, 0F);
             attackProjectileEntity.setPosition(this.getX(), this.getY(), this.getZ());
             getWorld().spawnEntity(attackProjectileEntity);
+        }
+    }
+
+    public void mine(boolean eyeLevel) {
+        Vec3d eyePos = getEyePos();
+        Vec3d rotVec = getRotationVec(1);
+        Vec3d frontVec = eyePos.add(rotVec.x * 1, rotVec.y * 1, rotVec.z * 1);
+        BlockHitResult hitResult = getWorld().raycast(new RaycastContext(eyePos, frontVec, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, this));
+        BlockPos resultBlockPos = hitResult.getBlockPos();
+        // if the robot is facing its head horizontally, eyeLevel determines if it mines the block
+        // directly in front of its face
+        // This is useless if the robot is looking up or down
+        if(eyeLevel && getPitch() == 0) {
+            resultBlockPos = hitResult.getBlockPos().add(0, 1, 0);
+        }
+        Block resultBlock = getWorld().getBlockState(resultBlockPos).getBlock();
+        getWorld().breakBlock(resultBlockPos, true);
+    }
+
+    public void mineVertical(boolean down) {
+        setPitch(getPitch() - 90);
+        swingHand(Hand.MAIN_HAND);
+        BlockPos targetBlockPos;
+        if(down) {
+            targetBlockPos = getBlockPos().add(0, -1, 0);
+        } else {
+            targetBlockPos = getBlockPos().add(0, 2, 0);
+        }
+        Block resultBlock = getWorld().getBlockState(targetBlockPos).getBlock();
+        System.out.println(targetBlockPos);
+        System.out.println(resultBlock.getName());
+        getWorld().breakBlock(targetBlockPos, true);
+    }
+
+    public void placeBlock(String type, boolean eyeLevel) {
+        equipIfAvailable(type);
+        if(getEquippedStack(EquipmentSlot.MAINHAND).getUseAction().equals(UseAction.BLOCK)) {
+            System.out.println("yass this is a block!!");
+        }
+    }
+
+    public int quantity(String itemName) {
+        int storedAmt = 0;
+        for(ItemStack itemStack : inventory) {
+            System.out.println(itemStack.getItem().toString());
+            if(itemStack.getItem().toString().equalsIgnoreCase(itemName)) {
+                storedAmt = storedAmt + itemStack.getCount();
+            }
+        }
+        return storedAmt;
+    }
+
+    public void equipSlot(int slot) {
+        equipStack(EquipmentSlot.MAINHAND, getInventoryStack(slot));
+    }
+
+    public String getItemTypeAtSlot(int slot) {
+        return getStack(slot).getItem().toString();
+    }
+
+    public int getQuantityAtSlot(int slot) {
+        return getStack(slot).getCount();
+    }
+
+    public boolean equipIfAvailable(String itemName) {
+        for(ItemStack itemStack : inventory) {
+            System.out.println(itemStack.getItem().toString());
+            if(itemStack.getItem().toString().equalsIgnoreCase(itemName)) {
+                System.out.println("yes!");
+                equipStack(EquipmentSlot.MAINHAND, itemStack);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void dropHolding() {
+        dropStack(getEquippedStack(EquipmentSlot.MAINHAND));
+    }
+
+    public void dropAll(String itemName) {
+        for(int i = 0; i < inventory.size(); i++) {
+            ItemStack itemStack = inventory.get(i);
+            if(itemStack.getItem().toString().equalsIgnoreCase(itemName)) {
+                dropStack(itemStack);
+                removeStack(i);
+            }
+        }
+    }
+
+    public void dropAmount(int amount, String itemName) {
+        int amountRemaining = amount;
+        for (int i = 0; i < inventory.size(); i++) {
+            ItemStack itemStack = getStack(i);
+            if (!itemStack.isEmpty() && itemStack.getItem().toString().equalsIgnoreCase(itemName)) {
+                if (itemStack.getCount() <= amount) {
+                    // Drop the entire stack if the count is less than or equal to the specified amount
+                    dropStack(itemStack);
+                    setStack(i, ItemStack.EMPTY);
+                    amount -= itemStack.getCount();
+                } else {
+                    // Drop a portion of the stack and update the count
+                    dropStack(itemStack.split(amount));
+                    amount = 0;
+                }
+                if (amount <= 0) {
+                    break; // All items dropped, exit the loop
+                }
+            }
         }
     }
 

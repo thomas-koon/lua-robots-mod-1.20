@@ -19,7 +19,7 @@ public class RobotInvisibleAttackProjectileEntity extends ThrownEntity {
     }
 
     public RobotInvisibleAttackProjectileEntity(World world, LivingEntity owner) {
-        super(ExampleMod.ROBOT_INVISIBLE_ATTACK_PROJECTILE, world);
+        super(LuabotsMod.ROBOT_INVISIBLE_ATTACK_PROJECTILE, world);
         System.out.println("spawned");
     }
 

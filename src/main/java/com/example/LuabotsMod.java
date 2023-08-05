@@ -19,21 +19,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class ExampleMod implements ModInitializer {
+public class LuabotsMod implements ModInitializer {
 	// This logger is used to write text to the console and the log file.
 	// It is considered best practice to use your mod id as the logger's name.
 	// That way, it's clear which mod wrote info, warnings, and errors.
     public static final Logger LOGGER = LoggerFactory.getLogger("modid");
-	public static final ProgramItem CUSTOM_ITEM = new ProgramItem(new FabricItemSettings());
+	public static final ProgramItem PROGRAM_ITEM = new ProgramItem(new FabricItemSettings());
 	public static final RobotPDAItem PDA_ITEM = new RobotPDAItem(new FabricItemSettings());
 
 	public static final EntityType<RobotEntity> ROBOT = Registry.register(
-			Registries.ENTITY_TYPE, new Identifier("tutorial", "robot"),
+			Registries.ENTITY_TYPE, new Identifier("luabots", "robot"),
 			FabricEntityTypeBuilder.create(SpawnGroup.MISC, RobotEntity::new).dimensions(EntityDimensions.fixed(1.0f, 1.0f)).build()
 	);
 
 	public static final EntityType<RobotInvisibleAttackProjectileEntity> ROBOT_INVISIBLE_ATTACK_PROJECTILE = Registry.register(
-			Registries.ENTITY_TYPE, new Identifier("tutorial", "robot_attack"),
+			Registries.ENTITY_TYPE, new Identifier("luabots", "robot_attack"),
 			FabricEntityTypeBuilder.<RobotInvisibleAttackProjectileEntity>create(SpawnGroup.MISC, RobotInvisibleAttackProjectileEntity::new).dimensions(EntityDimensions.fixed(0.25f, 0.25f)).build()
 	);
 
@@ -42,8 +42,8 @@ public class ExampleMod implements ModInitializer {
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
-		Registry.register(Registries.ITEM, new Identifier("tutorial", "pda"), PDA_ITEM);
-		Registry.register(Registries.ITEM, new Identifier("tutorial", "custom_item"), CUSTOM_ITEM);
+		Registry.register(Registries.ITEM, new Identifier("luabots", "pda"), PDA_ITEM);
+		Registry.register(Registries.ITEM, new Identifier("luabots", "program_item"), PROGRAM_ITEM);
 		FabricDefaultAttributeRegistry.register(ROBOT, RobotEntity.createRobotAttributes());
 		LOGGER.info("Hello Fabric world!");
 

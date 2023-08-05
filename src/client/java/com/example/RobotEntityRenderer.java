@@ -12,11 +12,11 @@ public class RobotEntityRenderer extends BipedEntityRenderer<RobotEntity, RobotE
     }
 
     public RobotEntityRenderer(EntityRendererFactory.Context context) {
-        super(context, new RobotEntityModel(context.getPart(ExampleModClient.MODEL_ROBOT_LAYER)), 0.5f);
+        super(context, new RobotEntityModel(context.getPart(LuabotsModClient.MODEL_ROBOT_LAYER)), 0.5f);
     }
 
     @Override
     public Identifier getTexture(RobotEntity entity) {
-        return new Identifier("tutorial", "textures/entity/robot.png");
+        return new Identifier("luabots", "textures/entity/robot.png");
     }
 }

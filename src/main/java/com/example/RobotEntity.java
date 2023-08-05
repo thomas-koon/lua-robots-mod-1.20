@@ -1,6 +1,9 @@
 package com.example;
 
+import net.minecraft.block.AirBlock;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
@@ -11,6 +14,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.vehicle.VehicleInventory;
 import net.minecraft.inventory.Inventories;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
@@ -62,7 +67,7 @@ public class RobotEntity extends MobEntity implements VehicleInventory {
 
     public void setCurrentProgramToTopLeft() {
         for(int i = 0; i < 36; i++) {
-            if(inventory.get(i).isOf(ExampleMod.CUSTOM_ITEM)) {
+            if(inventory.get(i).isOf(LuabotsMod.PROGRAM_ITEM)) {
                 this.currentProgramItem = inventory.get(i);
                 return;
             }
@@ -131,6 +136,50 @@ public class RobotEntity extends MobEntity implements VehicleInventory {
     }
 
     public void mine(boolean eyeLevel) {
+        getWorld().breakBlock(getFrontBlockPos(eyeLevel), true);
+    }
+
+    public void mineUp() {
+        setPitch(getPitch() - 90);
+        swingHand(Hand.MAIN_HAND);
+        BlockPos targetBlockPos = getBlockPos().add(0, 2, 0);
+        getWorld().breakBlock(targetBlockPos, true);
+    }
+
+    public void mineDown(boolean down) {
+        setPitch(getPitch() + 90);
+        swingHand(Hand.MAIN_HAND);
+        BlockPos targetBlockPos = getBlockPos().add(0, -1, 0);
+        getWorld().breakBlock(targetBlockPos, true);
+    }
+
+    public void placeBlock(String type, boolean eyeLevel) {
+        equipIfAvailable(type);
+        Item blockItem = getEquippedStack(EquipmentSlot.MAINHAND).getItem();
+        if(blockItem instanceof BlockItem) {
+            BlockPos pos = getFrontBlockPos(eyeLevel);
+            if(getWorld().getBlockState(pos).getBlock() == Blocks.AIR) {
+                int count = getEquippedStack(EquipmentSlot.MAINHAND).getCount();
+                getEquippedStack(EquipmentSlot.MAINHAND).setCount(count - 1);
+                getWorld().setBlockState(pos, ((BlockItem) blockItem).getBlock().getDefaultState());
+            }
+        }
+    }
+
+    public void placeBlockUp(String type) {
+        equipIfAvailable(type);
+        Item blockItem = getEquippedStack(EquipmentSlot.MAINHAND).getItem();
+        if(blockItem instanceof BlockItem) {
+            BlockPos pos = getBlockPos().add(0, 2, 0);
+            if(getWorld().getBlockState(pos).getBlock() == Blocks.AIR) {
+                int count = getEquippedStack(EquipmentSlot.MAINHAND).getCount();
+                getEquippedStack(EquipmentSlot.MAINHAND).setCount(count - 1);
+                getWorld().setBlockState(pos, ((BlockItem) blockItem).getBlock().getDefaultState());
+            }
+        }
+    }
+
+    private BlockPos getFrontBlockPos(boolean eyeLevel) {
         Vec3d eyePos = getEyePos();
         Vec3d rotVec = getRotationVec(1);
         Vec3d frontVec = eyePos.add(rotVec.x * 1, rotVec.y * 1, rotVec.z * 1);
@@ -142,30 +191,7 @@ public class RobotEntity extends MobEntity implements VehicleInventory {
         if(eyeLevel && getPitch() == 0) {
             resultBlockPos = hitResult.getBlockPos().add(0, 1, 0);
         }
-        Block resultBlock = getWorld().getBlockState(resultBlockPos).getBlock();
-        getWorld().breakBlock(resultBlockPos, true);
-    }
-
-    public void mineVertical(boolean down) {
-        setPitch(getPitch() - 90);
-        swingHand(Hand.MAIN_HAND);
-        BlockPos targetBlockPos;
-        if(down) {
-            targetBlockPos = getBlockPos().add(0, -1, 0);
-        } else {
-            targetBlockPos = getBlockPos().add(0, 2, 0);
-        }
-        Block resultBlock = getWorld().getBlockState(targetBlockPos).getBlock();
-        System.out.println(targetBlockPos);
-        System.out.println(resultBlock.getName());
-        getWorld().breakBlock(targetBlockPos, true);
-    }
-
-    public void placeBlock(String type, boolean eyeLevel) {
-        equipIfAvailable(type);
-        if(getEquippedStack(EquipmentSlot.MAINHAND).getUseAction().equals(UseAction.BLOCK)) {
-            System.out.println("yass this is a block!!");
-        }
+        return resultBlockPos;
     }
 
     public int quantity(String itemName) {
